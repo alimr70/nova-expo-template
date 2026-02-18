@@ -93,16 +93,14 @@ const Trigger = ({ children, style }: TriggerProps): JSX.Element => {
   const triggerRef = useRef<View>(null);
 
   const handlePress = (): void => {
-    triggerRef.current?.measure(
+    triggerRef.current?.measureInWindow(
       (
-        _x: number,
-        _y: number,
+        x: number,
+        y: number,
         width: number,
         height: number,
-        pageX: number,
-        pageY: number,
       ) => {
-        setTriggerLayout({ x: pageX, y: pageY, width, height });
+        setTriggerLayout({ x, y, width, height });
         open();
       },
     );
