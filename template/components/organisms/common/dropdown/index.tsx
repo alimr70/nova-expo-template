@@ -1,16 +1,23 @@
 import { Text } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
-import Dropdown from "@/components/organisms/dropdown";
+import { Dropdown } from "@/components/vendor/reactICX";
 import styles from "./styles";
 import { DialogOption, DropdownProps } from "./types";
 
 /**
  * A customizable dropdown component that displays a list of options when triggered.
- * @argument:
+ * @argument
  * - `options`: An array of dropdown options, each containing a label, value, optional icon, and optional color.
  * - `children`: Custom trigger element for the dropdown. If not provided, a default icon is used.
  * - `onChange`: Callback function that is called when an option is selected, receiving the selected value and the selected option as arguments.
+ *
+ * @warning Do NOT pass a touchable element (e.g. `Button`, `TouchableOpacity`,
+ * `Pressable`) as `children`. The trigger is already wrapped in its own
+ * `TouchableOpacity`, so a nested touchable swallows the press and the dropdown
+ * will never open. Pass plain, non-touchable content instead (e.g. a `View`
+ * with a `Text`/`Icon`).
+ * 
  * @example
  * ```tsx
  * <DropdownComponent
@@ -62,7 +69,7 @@ export default function DropdownComponent({
               </Text>
               {option.icon && (
                 <Ionicons
-                  name={option.icon}
+                  name={option.icon as keyof typeof Ionicons.glyphMap}
                   size={16}
                   color={option.color || "#111"}
                 />
