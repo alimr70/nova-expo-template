@@ -1,3 +1,5 @@
-const tagTypes = ["User"];
+const tagTypes = [
+  "User",
+];
 
 export default tagTypes;

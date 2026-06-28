@@ -11,7 +11,7 @@ import DomainUrl from "@/apis/Domain";
 import { login, logout } from "@/redux/authReducer";
 import { RootState } from "@/redux";
 import tagTypes from "./tagTypes";
-import { AuthTokenResponse } from "./@types/auth";
+import { AuthTokenResponse } from "./services/auth/types";
 
 const rawBaseQuery = (baseUrl: string) =>
   fetchBaseQuery({

@@ -1,0 +1,25 @@
+/** A single {{pascalCase name}} item as returned by the list endpoint. */
+export interface {{pascalCase name}}ListItem {
+  id: number;
+  // TODO: add fields returned by the backend.
+}
+
+/** Full {{pascalCase name}} as returned by the detail endpoint. */
+export interface {{pascalCase name}}Detail extends {{pascalCase name}}ListItem {
+  // TODO: add detail-only fields.
+}
+
+/** Query-string params for the {{pascalCase name}} list endpoint. */
+export interface {{pascalCase name}}Params {
+  page?: number;
+  search?: string;
+  // TODO: add filters.
+}
+
+/** Request body for creating a {{pascalCase name}}. */
+export interface Create{{pascalCase name}}Body {
+  // TODO: add the fields the create endpoint expects.
+}
+
+/** Request body for updating a {{pascalCase name}} (usually partial). */
+export interface Update{{pascalCase name}}Body extends Partial<Create{{pascalCase name}}Body> {}

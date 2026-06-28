@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "@/apis";
 import store from "@/redux";
 import { login, setUserInfo } from "@/redux/authReducer";
-import { loggedInUser } from "@/apis/@types/auth";
+import { loggedInUser } from "@/apis/services/auth/types";
 
 export default function loginHandler({
   token = "",

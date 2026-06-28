@@ -133,9 +133,9 @@ your-app-name/                     # Your new Expo app
 │   ├── 📄 Domain.ts               # API domain configuration
 │   ├── 📄 index.ts                # API exports
 │   ├── 📄 tagTypes.ts             # RTK Query tag types
-│   ├── 📁 @types/                 # API type definitions
+│   ├── 📁 @types/                 # Shared API type definitions
 │   ├── 📁 middlewares/            # API middlewares
-│   └── 📁 services/               # API service endpoints
+│   └── 📁 services/               # API service endpoints (one folder per feature)
 │
 ├── 📁 app/                        # App routing (Expo Router)
 │   ├── 📄 _layout.tsx             # Root layout
@@ -267,20 +267,32 @@ The template includes a pre-configured API layer using RTK Query:
 
 ### Setting up your API
 1. Configure your API domain in `apis/Domain.ts`
-2. Define your endpoints in `apis/services/`
-3. Add TypeScript types in `apis/@types/`
+2. Define each feature's endpoints in `apis/services/<feature>/index.ts`
+3. Co-locate that feature's request/response types in `apis/services/<feature>/types.ts`
+   (cross-cutting types like `PaginatedResponse` stay in `apis/@types/`)
+
+> Tip: scaffold the whole layer with `npx plop create <Name> integration`.
 
 ### Example API Service
 ```tsx
-// apis/services/user.ts
-import { api } from '../index';
+// apis/services/user/types.ts
+export interface User {
+  id: number;
+  name: string;
+}
+```
+
+```tsx
+// apis/services/user/index.ts
+import api from '@/apis';
+import { User } from './types';
 
 export const userApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getUser: builder.query({
+    getUser: builder.query<User, number>({
       query: (id) => `users/${id}`,
     }),
-    updateUser: builder.mutation({
+    updateUser: builder.mutation<User, { id: number } & Partial<User>>({
       query: ({ id, ...patch }) => ({
         url: `users/${id}`,
         method: 'PATCH',

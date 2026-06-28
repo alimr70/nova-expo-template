@@ -1,5 +1,5 @@
 import api from "@/apis";
-import { AuthTokenResponse, LoginBody, SignupBody, User } from "../@types/auth";
+import { AuthTokenResponse, LoginBody, SignupBody, User } from "./types";
 
 export const authApi = api.injectEndpoints({
   endpoints: (build) => ({
