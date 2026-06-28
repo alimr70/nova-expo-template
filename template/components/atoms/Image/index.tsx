@@ -5,15 +5,12 @@ import LoadingComponent from "../Loading";
 import styles from "./styles";
 
 function Image({ containerStyle, style, ...otherProps }: ImgProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   return (
     <View style={containerStyle}>
       <RNImage
-        onLoadStart={() => {
-          setIsLoading(true);
-        }}
-        onLoadEnd={() => {
+        onLoad={() => {
           setIsLoading(false);
         }}
         style={style}
