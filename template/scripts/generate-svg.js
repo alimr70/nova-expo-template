@@ -30,13 +30,13 @@
   ------------------------------------------------------------------------------
 */
 
-const fs = require("fs");
-const path = require("path");
-const { execSync } = require("child_process");
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
 
-const svgFolder = "./assets/svgs";
-const outputFolder = "./assets/icons";
-const iconListFile = "./components/atoms/Icon/list.ts";
+const svgFolder = './assets/svgs';
+const outputFolder = './assets/icons';
+const iconListFile = './components/atoms/Icon/list.ts';
 
 // Create output folder if it doesn't exist
 if (!fs.existsSync(outputFolder)) {
@@ -46,24 +46,26 @@ if (!fs.existsSync(outputFolder)) {
 const newComponents = [];
 
 const modifyComponent = (filePath, componentName) => {
-  let content = fs.readFileSync(filePath, "utf8");
+  let content = fs.readFileSync(filePath, 'utf8');
 
   // 1. Fix the import/export naming consistency
   const pascalName = componentName
-    .split("-")
+    .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join("");
+    .join('');
 
   // 2. Clean up and format the content
-  const paths = content.match(/<Path[^>]*\/>/g)?.join("\n    ") || "";
+  const paths = content.match(/<Path[^>]*\/>/g)?.join('\n    ') || '';
 
-  content = `import { IconProps } from "@/components/atoms/Icon/types";
-import * as React from "react";
-import Svg, { Path } from "react-native-svg";
+  content = `import { IconProps } from '@/components/atoms/Icon/types';
+import * as React from 'react';
+import Svg, { Path } from 'react-native-svg';
 
-const ${pascalName} = ({ size = 24, color = "#000000", ...props }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 25 24" fill="none" color={color} {...props}>
-    ${paths}
+const ${pascalName} = ({ size = 24, color = 'primary', ...props }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" color={color} {...props}>
+    ${paths
+      .replace(/stroke="(?!none)[^"]+"/g, 'stroke={color}')
+      .replace(/fill="(?!none)[^"]+"/g, 'fill={color}')}
   </Svg>
 );
 
@@ -73,11 +75,18 @@ export default ${pascalName};
   fs.writeFileSync(filePath, content);
 };
 
+const generatePascalCase = (name) => {
+  return name
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+};
+
 // Process SVG files
 fs.readdirSync(svgFolder).forEach((file) => {
-  if (path.extname(file) === ".svg") {
+  if (path.extname(file) === '.svg') {
     const componentName = path
-      .basename(file, ".svg")
+      .basename(file, '.svg')
       .toLowerCase()
       .replace(/^\w/, (c) => c.toUpperCase());
     const outputFile = path.join(outputFolder, `${componentName}.tsx`);
@@ -89,7 +98,7 @@ fs.readdirSync(svgFolder).forEach((file) => {
           svgFolder,
           file
         )} > ${outputFile}`,
-        { stdio: "pipe" }
+        { stdio: 'pipe' }
       );
 
       // 2. Modify component
@@ -109,32 +118,46 @@ fs.readdirSync(svgFolder).forEach((file) => {
 // Rest of your original file handling the iconList updates...
 if (newComponents.length > 0) {
   try {
-    let content = fs.readFileSync(iconListFile, "utf8");
-    const newImports = newComponents
-      .map((name) => `import ${name} from "@/assets/icons/${name}";`)
-      .join("\n");
+    let content = fs.readFileSync(iconListFile, 'utf8');
 
-    const lastBraceIndex = content.lastIndexOf("}");
+    const newImports = newComponents
+      .filter(
+        (name) =>
+          !content.includes(`import ${generatePascalCase(name)} from '@/assets/icons/${name}';`)
+      )
+      .map((name) => `import ${generatePascalCase(name)} from '@/assets/icons/${name}';`)
+      .join('\n');
+
+    const lastBraceIndex = content.lastIndexOf('}');
     if (lastBraceIndex === -1) {
-      throw new Error("Could not find iconsList object");
+      throw new Error('Could not find iconsList object');
     }
 
     const newEntries = newComponents
-      .map((name) => `  ${name.toLowerCase()}: ${name},`)
-      .join("\n");
+      .filter(
+        (name) =>
+          !content.includes(
+            `${generatePascalCase(name).charAt(0).toLowerCase() + generatePascalCase(name).slice(1)}: ${generatePascalCase(name)},`
+          )
+      )
+      .map(
+        (name) =>
+          `  ${generatePascalCase(name).charAt(0).toLowerCase() + generatePascalCase(name).slice(1)}: ${generatePascalCase(name)},`
+      )
+      .join('\n');
 
     const updatedContent =
       newImports +
-      "\n" +
+      '\n' +
       content.slice(0, lastBraceIndex).trimEnd() +
-      "\n" +
+      '\n' +
       newEntries +
-      "\n" +
+      '\n' +
       content.slice(lastBraceIndex);
 
     fs.writeFileSync(iconListFile, updatedContent);
-    console.log("✅ Updated iconsList with new component");
+    console.log('✅ Updated iconsList with new component');
   } catch (error) {
-    console.error("❌ Failed to update iconsList:", error?.message);
+    console.error('❌ Failed to update iconsList:', error?.message);
   }
 }
