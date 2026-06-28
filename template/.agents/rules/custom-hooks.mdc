@@ -1,0 +1,226 @@
+---
+description: Detailed custom hooks standards for this project (creation, structure, side effects, forms, and usage in screens/components)
+globs: hooks/**/*.ts,hooks/**/*.tsx,components/**/*.ts,components/**/*.tsx,app/**/*.ts,app/**/*.tsx
+alwaysApply: true
+---
+
+# Custom Hooks Rule (Detailed)
+
+Use this rule whenever you create, update, or consume a custom hook in this repository.
+
+## Goal
+
+Custom hooks must be:
+- reusable
+- typed
+- side-effect safe
+- easy to consume in screens/components
+- consistent with this project's patterns
+
+## Project placement and naming
+
+## 1) Where to place hooks
+
+- Shared hook used across features: `hooks/use<Feature>.ts` or `hooks/use<Feature>.tsx`.
+- Feature-only hook used by one screen section can be colocated if needed, but prefer `hooks/` first for discoverability.
+- Keep route files in `app/**` thin; heavy state logic belongs in hooks + `components/pages/**`.
+
+## 2) Naming
+
+- Hook names must start with `use` and be PascalCase after it.
+- Good: `useThemeColor`, `usePagination`, `useRegisterForm`.
+- Avoid vague names like `useData` or `useUtils`.
+
+## 3) File export style
+
+- If file exposes one hook, use default export.
+- Keep file focused on one responsibility.
+
+## Hook design checklist
+
+## 1) Define clear input/output contracts
+
+- Create an input type/interface when the hook takes params.
+- Create a return type/interface for non-trivial hooks.
+- No `any` unless temporary boundary with comment and cleanup plan.
+
+Example shape:
+
+```ts
+interface UseRegisterFormParams {
+  initialEmail?: string;
+}
+
+interface UseRegisterFormReturn {
+  control: Control<RegisterFormValues>;
+  onSubmit: () => void;
+  isValid: boolean;
+}
+```
+
+## 2) Keep hooks logic-only
+
+- Do not return JSX from hooks.
+- Do not import screen/layout wrappers inside hooks.
+- Hooks may use platform, permissions, storage, redux, rtk-query hooks, i18n helpers when needed.
+
+## 3) Side effects rules
+
+- Never execute async work directly in hook body.
+- Use `useEffect` for async work and cleanup.
+- Guard race conditions using mounted flag / abort logic for async flows.
+- Keep dependency arrays correct and explicit.
+
+Correct pattern:
+
+```ts
+useEffect(() => {
+  let isMounted = true;
+
+  const run = async () => {
+    const result = await loadSomething();
+    if (isMounted) setState(result);
+  };
+
+  run();
+
+  return () => {
+    isMounted = false;
+  };
+}, [loadSomething]);
+```
+
+Avoid:
+
+```ts
+// do not run async IIFE in hook body
+(async () => {
+  await loadSomething();
+})();
+```
+
+## 4) Stable handlers
+
+- Use `useCallback` for event handlers passed to deep children when re-render churn matters.
+- Use `useMemo` for derived values (lists/options/config objects) that are recalculated frequently.
+- Do not over-memoize trivial values.
+
+## 5) Keep business logic in hook, rendering in component
+
+- Hook should prepare state/actions.
+- Component should map hook output to UI atoms/molecules/organisms.
+
+## Form hooks standard (react-hook-form)
+
+Use this for screens like register/basic info flows.
+
+## 1) Form values type
+
+- Define a dedicated `FormValues` interface.
+- Include defaults in `useForm({ defaultValues })`.
+
+## 2) Hook responsibility
+
+- Hook owns `useForm`, derived state, submit handlers, and side sheet/modal flags related to the form flow.
+- Screen consumes `control`, `watch`, handlers, booleans.
+
+## 3) Screen usage
+
+- Use `Controller` for controlled components (`Input`, `PhoneInput`, `DropDown`, etc.).
+- Keep translation keys in UI layer; pass translated placeholders (`t('KEY')`) when component does not auto-translate.
+
+Example hook:
+
+```ts
+import { useForm } from 'react-hook-form';
+
+interface RegisterFormValues {
+  phoneOrEmail: string;
+  password: string;
+  confirmPassword: string;
+  isTermsChecked: boolean;
+}
+
+export default function useRegisterForm() {
+  const form = useForm<RegisterFormValues>({
+    defaultValues: {
+      phoneOrEmail: '',
+      password: '',
+      confirmPassword: '',
+      isTermsChecked: false,
+    },
+    mode: 'onChange',
+  });
+
+  const isTermsChecked = form.watch('isTermsChecked');
+
+  return {
+    ...form,
+    isTermsChecked,
+  };
+}
+```
+
+Example screen usage:
+
+```tsx
+const { control, isTermsChecked } = useRegisterForm();
+
+<Controller
+  control={control}
+  name="password"
+  render={({ field: { value, onChange } }) => (
+    <Input
+      label="PASSWORD"
+      placeholder="PASSWORD"
+      value={value}
+      onChange={onChange}
+      secureTextEntry
+    />
+  )}
+/>
+```
+
+## Data-fetching hooks standard
+
+- Prefer integrating existing RTK Query hooks over manual fetch in components.
+- Encapsulate pagination/refresh helpers in hook.
+- Return explicit loading states (`isLoading`, `isRefreshing`, `isFetchingMore` when relevant).
+- Ensure `refetch` and `loadMore` have guards to prevent duplicate requests.
+
+## Error handling
+
+- Normalize low-level errors inside hook when possible.
+- Return predictable values (`null`, empty list, fallback booleans) instead of throwing in render path.
+- For user-facing error copy, return status/code and map to translated text in UI layer.
+
+## Performance and rerender safety
+
+- Do not create new object/array literals in return if they can be memoized and are passed widely.
+- Avoid heavy computations on every render; memoize derived data.
+- Avoid unnecessary state duplication (derive from form/watch/store when possible).
+
+## Boundaries and architecture
+
+- Keep hooks framework-agnostic where possible, but project integrations are allowed:
+  - Redux selectors/actions
+  - RTK Query hooks
+  - Expo modules (notifications, permissions, etc.)
+- Do not leak transport/raw API objects to UI if mapping is needed.
+
+## Validation before done
+
+For any hook change:
+- Verify import order (lib -> absolute -> relative).
+- Verify no hardcoded user-facing strings were introduced in UI consumption.
+- Run lint on touched files.
+- Confirm old behavior still works in at least one existing screen path.
+
+## Anti-patterns (do not do)
+
+- Side effects executed in hook body.
+- Untyped returns for complex hooks.
+- Huge "god hook" mixing unrelated flows.
+- Returning JSX from hook.
+- Adding duplicate state that can be derived.
+- Creating hook that is used once and contains only one `useState` with no reusable logic.

@@ -1,0 +1,55 @@
+---
+description: Step-by-step enhancement workflow for additive features with safe integration in existing flows
+alwaysApply: true
+---
+
+# Enhancement Rule (Step-by-Step)
+
+Use this for non-breaking feature enhancement and UX improvements.
+
+## Project location guide
+
+- New screen/flow UI -> `components/pages/<flow>/<ScreenName>/...` + thin route in `app/...`
+- Shared UI enhancement -> `components/molecules/common` or `components/organisms/common`
+- Feature-only enhancement -> `components/molecules/scoped/<feature>` or `organisms/scoped/<feature>`
+- API enhancement -> `apis/services/**` + `apis/@types/**`
+
+## 1) Define enhancement scope
+
+- Write exact expected behavior change.
+- Identify impacted flows (auth/main/feature scope).
+- Confirm if change is additive or breaking.
+
+## 2) Place code in correct layer
+
+- Keep component placement aligned with Atomic Design.
+- Prefer extending existing reusable components before creating duplicates.
+
+## 3) Implement incrementally
+
+- Start with the smallest vertical slice that works.
+- Keep old behavior intact unless change request says otherwise.
+- Avoid refactoring unrelated areas during enhancement task.
+
+## 4) Contracts and typing
+
+- Keep prop/API contracts backward compatible where possible.
+- If contract changes are necessary, update all consumers in same change.
+
+## 5) UX consistency
+
+- Use `Text` atom + translation keys (no hardcoded user-facing strings).
+- Use existing design tokens (`Spacing`, colors, wrappers).
+
+## 6) Validation
+
+- Test old behavior still works.
+- Test new behavior path(s).
+- Run formatter/lint on touched files.
+
+## Summary requirement
+
+- Include:
+  - what was enhanced
+  - why it is backward-safe
+  - what was verified

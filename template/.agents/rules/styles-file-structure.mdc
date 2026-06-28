@@ -1,0 +1,80 @@
+---
+description: React Native StyleSheet rules with Spacing-first sizing and Text component usage
+globs: **/{styles,style}.ts
+alwaysApply: true
+---
+
+# React Native StyleSheet Conventions
+
+## File placement
+
+- Every component should keep styles in a colocated `styles.ts` file.
+- Legacy `style.ts` files may exist; do not rename them unless requested in the task.
+- Use `StyleSheet.create(...)` and export `styles` as default.
+
+## Core rules (must follow)
+
+- **Spacing first**: prefer `Spacing.x*` from `@/constants/Spacing` for margin/padding/size values.
+- **Global style reuse**: prefer composing `GLOBAL_STYLES` helpers (row, centering, gaps, fonts) before adding duplicate inline style declarations.
+- **Numeric fallback is allowed**: use raw numeric values when no matching `Spacing` token exists or when exact design values are required.
+- **Avoid blind `moderateScale` usage**: since `Spacing` already uses `moderateScale`, only call `moderateScale(...)` directly when implementing a non-token custom size.
+- **Text atom first**: for normal UI copy, use `@/components/atoms/Text` instead of `react-native` `Text`.
+- **Typography in styles is allowed only when needed by the component type**:
+  - Allowed: components that render native text directly (for example `Input`, placeholders/hints, third-party wrappers, button internals).
+  - Preferred otherwise: keep text styling through Text atom `variant` and `color` props.
+
+## styles.ts example (like Button)
+
+```tsx
+import { StyleSheet } from "react-native";
+import Spacing from "@/constants/Spacing";
+import { moderateScale } from "@/constants/Metrics";
+
+const styles = StyleSheet.create({
+  button: {
+    alignItems: "center",
+    borderRadius: Spacing.x8,
+    flexDirection: "row",
+    height: Spacing.x13,
+    justifyContent: "center",
+    paddingHorizontal: Spacing.x4,
+  },
+  prefixSpacing: {
+    marginEnd: Spacing.x2,
+  },
+  // 18 is not in Spacing map -> use moderateScale fallback
+  customIconSize: {
+    width: moderateScale(18),
+    height: moderateScale(18),
+  },
+});
+
+export default styles;
+```
+
+## Text usage example (no font/color styling)
+
+```tsx
+import { View } from "react-native";
+import Text from "@/components/atoms/Text";
+import styles from "./styles";
+
+export default function EmptyState() {
+  return (
+    <Text variant="md" color="body">
+      {text}
+    </Text>
+  );
+}
+```
+
+```tsx
+// ❌ WRONG: typography and text color inside styles.ts
+const styles = StyleSheet.create({
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111111",
+  },
+});
+```

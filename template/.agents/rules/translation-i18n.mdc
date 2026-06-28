@@ -1,0 +1,68 @@
+---
+description: Enforce translation keys and localized text for all user-facing strings
+alwaysApply: true
+---
+
+# Translation and I18n Rules
+
+All user-facing text in this project must be translated.
+
+## Text Component Usage
+
+- Use only `Text` from `@/components/atoms/Text` for app text.
+- Do not use `Text` from `react-native` for user-facing strings.
+- Keep `autoTranslate` enabled (default is `true`).
+- With `autoTranslate={true}`, `children` must be a translation key string (for example: `LOGIN`, `PERSONAL_INFORMATION`).
+- Set `autoTranslate={false}` when rendering non-key content such as API/user text, numbers, JSX nodes, or mixed/interpolated content.
+
+```tsx
+// ✅ CORRECT
+import Text from "@/components/atoms/Text";
+import { t } from "i18next";
+
+<Text>PERSONAL_INFORMATION</Text>
+
+// ❌ WRONG: hardcoded string
+<Text>Personal Information</Text>
+
+// ✅ ALLOWED EXCEPTION: dynamic number from API response
+<Text autoTranslate={false}>{`${orderCount} ${t("ORDERS")}`}</Text>
+```
+
+## Translation Key Format
+
+- Add translation keys as **UPPER_SNAKE_CASE English keys**.
+- Keys must be semantic and reusable (e.g. `GO_TO_LOGIN`, `PERSONAL_INFORMATION`).
+- Avoid sentence-case keys for new entries.
+
+```json
+// ✅ CORRECT
+"GO_TO_LOGIN": "Go to Login",
+"PERSONAL_INFORMATION": "Personal Information"
+
+// ❌ WRONG
+"Go to Login": "Go to Login",
+"Personal Information": "Personal Information"
+```
+
+## Locale File Updates (Required)
+
+For every new text key, update both:
+- `locale/en.json`: value is the English text
+- `locale/ar.json`: value is the Arabic text
+
+```json
+// locale/en.json
+"GO_TO_LOGIN": "Go to Login"
+
+// locale/ar.json
+"GO_TO_LOGIN": "اذهب إلى تسجيل الدخول"
+```
+
+Do not add a key in one locale without adding it to the other locale in the same change.
+
+## Arabic Fallback Communication
+
+- If you cannot read or confidently write Arabic, do not block the implementation.
+- Keep your code changes, add the English keys normally, and clearly report in chat the exact new keys that need Arabic values.
+- The chat message must include a simple list of added keys so a reviewer can complete `locale/ar.json`.

@@ -1,0 +1,124 @@
+---
+description: React Native best practices for imports and image usage
+alwaysApply: true
+---
+
+# React Native Best Practices
+
+## Import Order
+
+Always organize imports in this order:
+1. **Library imports** (from node_modules)
+2. **Absolute imports** (using `@/` alias)
+3. **Relative imports** (using `./` or `../`)
+
+For component-local files, import:
+- types as `import <ComponentName>Props from "./types"`
+- styles as `import styles from "./styles"`
+
+```tsx
+// ✅ CORRECT: lib → absolute → relative
+import { Pressable, Text } from "react-native";
+import Icon from "@/components/atoms/Icon";
+import ButtonProps from "./types";
+import styles from "./styles";
+
+// ❌ WRONG: mixed order and wrong local import conventions
+import styles from "./Button.module.scss";
+import Icon from "@/components/atoms/Icon";
+import { Pressable, Text } from "react-native";
+import { ButtonProps } from "./Button.type";
+```
+
+## React Import
+
+This is a React Native project. **Do not import default `React`** unless a specific file requires it.
+
+```tsx
+// ❌ WRONG: unnecessary default React import
+import React from "react";
+import { useMemo } from "react";
+
+// ✅ CORRECT
+import { useMemo } from "react";
+```
+
+## Image Component
+
+Always use the Image atom from `@/components/atoms/Image` in app components.
+
+```tsx
+// ✅ CORRECT: use project Image atom
+import Image from "@/components/atoms/Image";
+import Logo from '@/assets/images/nova-black.png';
+import styles from './styles';
+
+<Image
+  source={Logo}
+  style={styles.logo}
+/>
+
+// ❌ WRONG: importing image directly in app component
+import { Image } from "react-native";
+```
+
+## Export Style
+
+Prefer **default export** when a file exports only one thing.
+
+```tsx
+// ✅ CORRECT: single export uses default
+type ButtonProps = {
+  title: string;
+};
+
+export default ButtonProps;
+
+// ❌ WRONG: named export for a single exported item
+export type ButtonProps = {
+  title: string;
+};
+```
+
+For component style files (like `components/atoms/Button/styles.ts`), follow the same pattern:
+
+```tsx
+// ✅ CORRECT: styles file with default export
+import { StyleSheet } from "react-native";
+import Spacing from "@/constants/Spacing";
+
+const styles = StyleSheet.create({
+  button: {
+    alignItems: "center",
+    borderRadius: Spacing.x8,
+  },
+});
+
+export default styles;
+
+// ❌ WRONG: named export in a single-export styles file
+export const styles = StyleSheet.create({
+  button: {},
+});
+```
+
+## Component Import & Export
+
+For component files that export one component, use **default export** and **default import**.
+
+```tsx
+// ✅ CORRECT: default export for single component file
+export default function Button() {
+  return null;
+}
+
+// ✅ CORRECT: default import
+import Button from "@/components/atoms/Button";
+
+// ❌ WRONG: named export + named import for single component file
+export function Button() {
+  return null;
+}
+
+import { Button } from "@/components/atoms/Button";
+```

@@ -1,0 +1,50 @@
+---
+description: Step-by-step fake async rule for dev/testing usage without leaking into production flows
+alwaysApply: true
+---
+
+# Fake Async Rule (Step-by-Step)
+
+Use this when adding temporary async simulation (delay/mock response/loading states).
+
+## Project location guide
+
+- Demo/dev-only UI behavior:
+  - `components/pages/**` or feature component files
+- API-level fake responses:
+  - keep in isolated dev helpers, not inside production `apis/services/**` runtime paths
+- Test-level fake async:
+  - test files and test utilities only
+
+## 1) Decide if fake async is really needed
+
+- Use fake async only for:
+  - development demos
+  - temporary backend gap
+  - testing scenarios
+
+## 2) Isolate implementation
+
+- Put fake behavior in clearly named helper/function:
+  - `fake*`, `mock*`, `dev*`
+- Keep fake logic separate from real API call code.
+
+## 3) Gate it explicitly
+
+- Enable fake behavior only in dev/test condition.
+- Never run fake async by default in production paths.
+
+## 4) Keep contract shape real
+
+- Even fake responses must follow real API contract shape from `api-contracts.mdc`.
+- Avoid fake payloads that differ from expected typed response.
+
+## 5) Add cleanup marker
+
+- If temporary fake async remains, add a TODO with clear context.
+- Do not leave fake async in critical user actions (auth, payment, profile save, etc.).
+
+## 6) Final check
+
+- Verify production path still uses real implementation.
+- Run lint/format on touched files.

@@ -1,0 +1,49 @@
+---
+description: Screen implementation rule for auth/main flows in this React Native Expo template
+alwaysApply: true
+---
+
+# Create Screen Rule
+
+Use this rule when creating or updating any screen component.
+
+## Required structure
+
+- Screen UI implementation must be created under `components/pages/...`.
+- Use flow-based page paths:
+  - `components/pages/auth/<ScreenName>/index.tsx`
+  - `components/pages/main/<ScreenName>/index.tsx`
+- Additional flow examples (as needed by project growth):
+  - `components/pages/onboarding/<ScreenName>/index.tsx`
+  - `components/pages/profile/<ScreenName>/index.tsx`
+  - `components/pages/settings/<ScreenName>/index.tsx`
+  - `components/pages/home/<ScreenName>/index.tsx`
+- Route files under `app/...` should stay thin and only export/import page components from `components/pages/...`.
+- Match wrappers to existing project flows:
+  - `components/pages/main/*` -> `MainScreenWrapper`
+  - `components/pages/auth/*` -> `ScreenWrapper` (current default in this project)
+  - use `AuthScreenWrapper` only when you are explicitly implementing that auth layout pattern.
+- Follow Atomic Design boundaries from `atomic-design-pattern.mdc`.
+- Prefer composing with existing atoms/molecules/templates before creating new primitives.
+
+## UI conventions
+
+- Use `Text` from `@/components/atoms/Text` for all user-facing text.
+- Use `Icon` from `@/components/atoms/Icon` for icons.
+- Use `Spacing` tokens first in styles; use `moderateScale` only when a token does not exist.
+- Keep styles in colocated `styles.ts`.
+
+## Navigation and routing
+
+- If a new screen is added under `app/`, ensure route wiring is complete (stack/tab where needed).
+- Do not leave temporary test navigation in production flows unless explicitly requested.
+
+## Translation
+
+- No hardcoded user-facing strings.
+- Add translation keys in both `locale/en.json` and `locale/ar.json` in the same change.
+
+## Validation
+
+- Run formatter/lint on changed files.
+- Ensure no unrelated files are modified.

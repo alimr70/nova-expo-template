@@ -1,0 +1,154 @@
+---
+description: API and service hooks standards (RTK Query usage, contract-safe mapping, errors, pagination, and screen consumption)
+globs: apis/**/*.ts,apis/@types/**/*.ts,hooks/**/*.ts,hooks/**/*.tsx,components/**/*.ts,components/**/*.tsx
+alwaysApply: true
+---
+
+# API Service Hooks Rule (Detailed)
+
+Use this rule whenever you create/update API-connected hooks or consume them inside screens/components.
+
+## Goal
+
+API hooks must be:
+- contract-safe
+- typed end-to-end
+- resilient to backend null/optional fields
+- easy to consume in UI
+- consistent with `apis/index.ts` + `apis/services/**` architecture
+
+## Source of truth layout
+
+- Base API: `apis/index.ts`
+- Feature endpoints: `apis/services/<feature>.ts`
+- Transport contracts: `apis/@types/<feature>.ts`
+- Shared app-level types (non-transport): `@types/**`
+- Screen orchestration hooks (optional): `hooks/use<Feature>*.ts`
+
+## Core rule: keep endpoint definition and UI orchestration separated
+
+- Endpoint + query/mutation definition belongs in `apis/services/**`.
+- UI orchestration (combining params, pagination state, mapping for screen needs) can live in `hooks/**`.
+- Do not move endpoint definitions into screen files.
+
+## Endpoint authoring rules
+
+## 1) Query/mutation typing is mandatory
+
+- Always type both response and request args.
+- No `any` in endpoint signatures.
+
+Example:
+
+```ts
+getProfile: builder.query<GetProfileResponse, void>({ ... })
+updateProfile: builder.mutation<UpdateProfileResponse, UpdateProfileRequest>({ ... })
+```
+
+## 2) Method + URL must be explicit
+
+- Always set `url` and `method` in query object.
+- Keep request body/query params explicit and typed.
+
+## 3) Tagging discipline
+
+- Read endpoints: `providesTags`
+- Write endpoints: `invalidatesTags`
+- Keep tag names centralized and consistent.
+
+## Contract safety and mapping
+
+## 1) Separate backend shape from UI-safe shape when needed
+
+- If backend returns nullable/inconsistent fields, map to UI-safe object in service/hook layer.
+- UI components should not need defensive access for every field.
+
+## 2) Normalize optional fields early
+
+- Provide fallback values near API boundary.
+- Prefer one mapping place instead of repeated fallback logic in many screens.
+
+## 3) Error normalization
+
+- Convert transport errors into predictable app-safe shape.
+- Return values that UI can handle easily (status/code/message or boolean flags).
+- Do not pass raw unknown backend blobs to UI components.
+
+## Hook patterns for API consumption
+
+## 1) Simple query usage
+
+- Use generated RTK Query hooks directly in component/page when orchestration is minimal.
+- Keep component render focused; avoid inline data massaging in JSX.
+
+## 2) Orchestration hook usage
+
+Create custom hooks in `hooks/` when you need one or more of:
+- combining multiple API hooks
+- pagination + refresh behavior
+- filter/search params sync
+- domain-level derived booleans
+- reusable submission flow
+
+Example output shape:
+
+```ts
+interface UseUsersListReturn {
+  items: UserCardModel[];
+  isLoading: boolean;
+  isRefreshing: boolean;
+  hasMore: boolean;
+  loadMore: () => void;
+  refetch: () => Promise<unknown>;
+}
+```
+
+## 3) Pagination guards
+
+- `loadMore` must guard on current loading state.
+- `loadMore` must guard on `hasMore`/`next` cursor existence.
+- `refetch` should reset/refresh safely and expose clear loading state.
+
+## Mutation flows
+
+## 1) Always handle success + failure paths
+
+- For mutation triggers, use `unwrap()` where appropriate.
+- Return/throw controlled errors from hook, not raw unknowns.
+
+## 2) Keep side-effects at orchestration layer
+
+- Navigation, toasts, local UI flags belong in page-level orchestrator hooks or screen components.
+- Service endpoint files should stay focused on request/response wiring.
+
+## 3) Backward-safe evolution
+
+- Additive contract changes first (optional fields).
+- If breaking field change is unavoidable, update all consumers in same change.
+
+## Usage in screens/components
+
+- Keep route files thin (`app/**` imports page component only).
+- Use page component + orchestration hook for data/state.
+- UI layer should render states explicitly:
+  - loading
+  - error/empty
+  - success
+- User-facing text remains translation-key based via Text atom rules.
+
+## Validation checklist before done
+
+For any API hook/service change:
+- Endpoint types compile with no `any` regression.
+- Updated `apis/@types/**` if contract changed.
+- All consumers updated in same change.
+- Lint passes on touched files.
+- One happy path + one edge path verified (empty/error/pagination end).
+
+## Anti-patterns (do not do)
+
+- Defining fetch logic directly in screen component when RTK Query endpoint exists.
+- Returning raw backend response shape directly to deep UI when mapper is needed.
+- Pagination without duplicate-request guards.
+- Mutation without explicit error handling.
+- Contract changes in service without updating consumers.

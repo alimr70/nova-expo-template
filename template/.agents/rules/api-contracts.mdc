@@ -1,0 +1,125 @@
+---
+description: Step-by-step API contract workflow for typed requests/responses, safe error handling, and backward compatibility
+globs: apis/**/*.ts,@types/**/*.ts,**/*api*.ts
+alwaysApply: true
+---
+
+# API Contracts Rule (Step-by-Step)
+
+Use this for any change touching API calls, payload types, adapters, or mappers.
+
+## Project-specific location map (where code should go)
+
+- Base API is centralized in:
+  - `apis/index.ts`
+- Feature endpoints are added in:
+  - `apis/services/<feature>.ts` (using `api.injectEndpoints`)
+- API transport/payload types are kept in:
+  - `apis/@types/*.ts` (preferred for service contracts in this project)
+- App-level shared types can stay in:
+  - `@types/*.ts` when they are cross-layer and not transport-specific.
+
+## Add a new endpoint (GET/POST) in this project
+
+1. Open (or create) `apis/services/<feature>.ts`.
+2. Add request/response types in `apis/@types/<feature>.ts`.
+3. Add endpoint with `builder.query` for GET, or `builder.mutation` for POST.
+4. Export generated hooks from the same service file.
+5. Update call sites to use the typed hook.
+6. Validate compile + lint for touched files.
+
+### GET template
+
+```ts
+// apis/services/example.ts
+import api from '@/apis';
+import { GetItemsResponse } from '@/apis/@types/example';
+
+export const exampleApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getItems: builder.query<GetItemsResponse, void>({
+      query: () => ({
+        url: '/items/',
+        method: 'get',
+      }),
+      providesTags: ['Items'],
+    }),
+  }),
+});
+
+export const { useGetItemsQuery } = exampleApi;
+```
+
+### POST template
+
+```ts
+// apis/services/example.ts
+import api from '@/apis';
+import { CreateItemRequest, CreateItemResponse } from '@/apis/@types/example';
+
+export const exampleApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    createItem: builder.mutation<CreateItemResponse, CreateItemRequest>({
+      query: (body) => ({
+        url: '/items/',
+        method: 'post',
+        body,
+      }),
+      invalidatesTags: ['Items'],
+    }),
+  }),
+});
+
+export const { useCreateItemMutation } = exampleApi;
+```
+
+## 1) Define/Update request type first
+
+- Create or update request type in `@types` (or colocated API type file).
+- Mark required vs optional fields explicitly.
+- Do not use `any`.
+
+## 2) Define/Update raw response contract
+
+- Add a typed raw backend response shape (as returned by API).
+- Include:
+  - success data shape
+  - error shape (code/message/details if available)
+  - pagination/meta when present
+
+## 3) Map raw response to app-safe model
+
+- Keep backend shape separate from UI/domain model when needed.
+- Add mapper/adapter logic in `apis/**` for nullable/optional fields.
+- Never pass unvalidated raw backend objects directly to UI.
+
+## 4) Normalize errors
+
+- Convert transport/backend errors into one app-level predictable error shape.
+- Keep useful status/code/message for logs and UX.
+- Do not leak raw error blobs into components.
+
+## 5) Keep backward compatibility
+
+- Prefer additive changes:
+  - add new fields as optional first
+  - keep old fields supported during transition
+- If breaking change is required:
+  - update all usages in the same change
+  - document migration impact clearly
+
+## 6) Update consumers
+
+- Update hooks/services/components using the changed contract.
+- Ensure no stale field names remain.
+
+## 7) Validate before done
+
+- Type check passes for touched files.
+- Lint passes for touched files.
+- Existing API consumers still compile.
+
+## Hard constraints
+
+- No `any` for request/response contracts (except isolated temporary boundary with justification).
+- No silent field access on optional backend data without fallback/guard.
