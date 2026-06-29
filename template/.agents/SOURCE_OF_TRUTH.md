@@ -1,4 +1,5 @@
 # Agent Source of Truth
 
-- Canonical rules and skills live in `.agents/`.
+- Canonical rules, skills, and commands live in `.agents/`.
+- One command per script in `scripts/` lives in `.agents/commands/`.
 - `.agent/`, `.claude/`, `.cursor/`, `.codex`, and `.windsurf/` mirror via lightweight pointer files.
