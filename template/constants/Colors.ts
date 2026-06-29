@@ -62,3 +62,5 @@ export const COLORS = {
     dangerFF: "#FFCDD4",
   },
 };
+
+export type colorType = keyof typeof COLORS.light;

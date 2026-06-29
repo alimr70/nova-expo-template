@@ -58,16 +58,23 @@ const modifyComponent = (filePath, componentName) => {
   const paths = content.match(/<Path[^>]*\/>/g)?.join('\n    ') || '';
 
   content = `import { IconProps } from '@/components/atoms/Icon/types';
-import * as React from 'react';
+import { COLORS } from '@/constants/Colors';
+import { Appearance } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-const ${pascalName} = ({ size = 24, color = 'primary', ...props }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" color={color} {...props}>
-    ${paths
-      .replace(/stroke="(?!none)[^"]+"/g, 'stroke={color}')
-      .replace(/fill="(?!none)[^"]+"/g, 'fill={color}')}
-  </Svg>
-);
+const ${pascalName} = ({ size = 24, color = 'primary', ...props }: IconProps) => {
+  const theme = Appearance.getColorScheme();
+  const targetTheme = (theme === 'unspecified' || !theme) ? 'light' : theme;
+  const targetColor = COLORS[targetTheme][color]
+
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" color={targetColor} {...props}>
+      ${paths
+      .replace(/stroke="(?!none)[^"]+"/g, 'stroke={targetColor}')
+      .replace(/fill="(?!none)[^"]+"/g, 'fill={targetColor}')}
+    </Svg>
+  )
+};
 
 export default ${pascalName};
 `;

@@ -1,9 +1,10 @@
+import { colorType } from "@/constants/Colors";
 import { iconsList } from "./list";
 
 export interface IconComponentProps {
   name: keyof typeof iconsList;
   size: number;
-  color: string;
+  color: colorType;
   direction?: "inherit" | "ltr" | "rtl";
   rotateX?: number;
   rotateY?: number;
