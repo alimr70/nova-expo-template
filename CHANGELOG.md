@@ -12,13 +12,10 @@ All notable changes to this project will be documented in this file.
 
 - **Upgrade to Expo SDK 57** (React Native 0.86.0, React 19.2.3).
 - Updated all `expo-*` packages to SDK 57 unified versioning (e.g. `expo-router@~57.0.2`).
-- Bumped compatible third-party native deps: `react-native-reanimated@4.5.0`, `react-native-worklets@0.10.0`, `react-native-gesture-handler@~2.32.0`, and aligned the `react-native-actions-sheet` worklets override to `0.10.0`.
+- Bumped compatible third-party native deps: `react-native-reanimated@4.5.0`, `react-native-worklets@0.10.0`, and `react-native-gesture-handler@~2.32.0`.
 - Removed the outdated `module`/`moduleResolution` (`node16`) and `jsx` overrides from `tsconfig.json` so it inherits Expo's `bundler` resolution — fixes ESM/CJS type errors on `react-native-reanimated`/`react-native-worklets` imports.
+- Pinned `@react-native/jest-preset` to `0.86.0` via `overrides` so a plain `npm install` resolves cleanly (works around `jest-expo@57`'s lagging `^0.85.0` peer range) — no `legacy-peer-deps` needed.
 
-### Added
-
-- Added `i18next` and `react-i18next` as explicit dependencies (previously imported in `locale/` but missing from `package.json`, which broke bundling).
-- Added `.npmrc` with `legacy-peer-deps=true` so `npm install` resolves cleanly despite React Native ecosystem peer-range lag (e.g. `jest-expo`'s `@react-native/jest-preset` peer).
 
 ## [3.0.0] - 2026-06-25
 
