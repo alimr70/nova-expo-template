@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 
 ## [3.0.0] - 2026-06-25
 
+### Added
+
+- **AI agent tooling** shared across Claude, Cursor, Codex, and other agents (`.claude`, `.cursor`, `.codex`, `.agents`, `.agent`):
+  - Skills for building native UI, Expo API routes, deployment, dev client, native data fetching, upgrading Expo, feature integration, and a skill-creator.
+  - Coding rules (atomic-design pattern, icon usage, React Native best practices, styles file structure, translation/i18n, and more).
+- **Slash commands** for translation (`translate`, `sync-translations`), SVG generation (`generate-svg`), and console-log cleanup (`remove-logs`).
+- **Plop `integration` generator** to scaffold RTK Query API services (`apis/services/<feature>/{index.ts,types.ts}`) and auto-register their cache tags.
+- **`Spacing` constants** (`x1`–`x14`, moderate-scaled) for consistent layout spacing.
+
 ### Changed
 
 - **Major upgrade to Expo SDK 56** (React Native 0.85.3, React 19.2.3).
@@ -15,6 +24,14 @@ All notable changes to this project will be documented in this file.
 - Bumped all third-party dependencies to versions compatible with SDK 56.
 - Upgraded TypeScript to 6.0.
 - Updated the optional Sentry integration to `@sentry/react-native@^8` (removed deprecated `sentry-expo` / webpack plugin; switched to the `@sentry/react-native/expo` config plugin and v8 tracing API).
+- Switched the template `android`/`ios` scripts to `expo run:android` / `expo run:ios` for dev-client builds.
+- Restructured the `apis` folder to co-locate each service with its types (`apis/services/<feature>/{index.ts,types.ts}`).
+- Improved the `generate-svg` script with dynamic color support, path property injection, and more robust icon-registry updates.
+
+### Fixed
+
+- Corrected a wrong import in the common `dropdown` organism.
+- Fixed the `Image` component loading state so the loader shows until the image actually loads (initial `isLoading = true`, using `onLoad` instead of `onLoadStart`/`onLoadEnd`).
 
 ### Removed
 
