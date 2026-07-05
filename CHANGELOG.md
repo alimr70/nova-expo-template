@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 
 - Internet Detection using NetInfo
 
+## [4.0.1] - 2026-07-05
+
+### Added
+
+- Added `lodash` utilities file with custom standard helper implementations (`debounce`, `throttle`, `cloneDeep`, `isEqual`, `uniqBy`, `groupBy`, `orderBy`).
+- Added `findChangedFields` utility function to compare two objects and extract modified fields.
+
+### Changed
+
+- Updated plop screen generator template to use `MainScreenWrapper` for main screens and `AuthScreenWrapper` for auth screens.
+
 ## [4.0.0] - 2026-07-01
 
 ### Changed

@@ -1,13 +1,23 @@
 import React from 'react';
-import { View } from 'react-native';
+{{#eq screenType "auth"}}
+import AuthScreenWrapper from '@/components/templates/AuthScreenWrapper';
+{{else}}
+import MainScreenWrapper from '@/components/templates/MainScreenWrapper';
+{{/eq}}
 import { Text } from '@/components/atoms';
-import styles from './styles';
+// import styles from './styles';
 
 const {{pascalCase name}} = () => {
   return (
-    <View style={styles.container}>
+    {{#eq screenType "auth"}}
+    <AuthScreenWrapper>
       <Text>{{pascalCase name}} Screen</Text>
-    </View>
+    </AuthScreenWrapper>
+    {{else}}
+    <MainScreenWrapper>
+      <Text>{{pascalCase name}} Screen</Text>
+    </MainScreenWrapper>
+    {{/eq}}
   );
 };
 

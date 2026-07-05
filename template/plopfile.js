@@ -20,6 +20,14 @@ module.exports = function (plop) {
     }).replace(/\s+/g, '');
   });
 
+  // Helper to check equality
+  plop.setHelper('eq', function (a, b, options) {
+    if (a === b) {
+      return options.fn(this);
+    }
+    return options.inverse(this);
+  });
+
   // Helper to convert to kebab-case
   plop.setHelper('kebabCase', function (text) {
     return text
